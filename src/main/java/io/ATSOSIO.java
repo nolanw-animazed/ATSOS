@@ -1,10 +1,18 @@
 package io;
 
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
+import com.opencsv.exceptions.CsvException;
 
 /**
  * ATSOSIO is used for File Interactions within the ATSOS System.
@@ -37,5 +45,42 @@ public class ATSOSIO {
 		}
 		
 		return optionsOutput;
+	}
+	
+	/**
+	 * Used to read in simple CSV Data from Files within the Program
+	 * Taken from the RRT Project
+	 * @param fileLocation Filelocation of the file
+	 * @return Returns an ArrayList of the File Data
+	 */
+	public static List<String[]> readFileCSVData(String fileLocation) {
+		List<String[]> myEntries = null;
+		try {
+			CSVReader reader = new CSVReaderBuilder(new FileReader(fileLocation)).build();
+			myEntries = reader.readAll();
+		    reader.close();
+		} catch (IOException | CsvException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		
+		return myEntries;
+	}
+	
+	/**
+	 * Used to write data to CSV Files from within the Program
+	 * Taken from the RRT Project
+	 * @param myEntries List of String[] Data from the program
+	 * @param fileLocation FileLocation used for saving.
+	 */
+	public static void writeFileCSVData(List<String[]> myEntries, String fileLocation) {
+		try {
+			ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileLocation)).build();
+			writer.writeAll(myEntries);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
 }

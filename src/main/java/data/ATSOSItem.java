@@ -29,9 +29,9 @@ public class ATSOSItem {
 	/** Details on the Signout for the Item */
 	private String signedOutDetails;
 	
-	public ATSOSItem(String itemName) {
+	public ATSOSItem(String itemName, String barcode) {
 		this.itemName = itemName;
-		barcode = "Unassigned";
+		this.barcode = barcode;
 		location = "Unassigned";
 		signedOutPerson = "Nobody";
 		signedOutTime = "N/A";
@@ -216,7 +216,5 @@ public class ATSOSItem {
 	public int getAuthLevel() {
 		return authLevel;
 	}
-	
-	
 	
 }

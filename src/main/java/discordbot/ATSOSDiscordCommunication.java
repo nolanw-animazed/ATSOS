@@ -2,16 +2,17 @@ package discordbot;
 
 import java.util.Collections;
 
+import controller.ATSOSController;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.Command;
 
 public class ATSOSDiscordCommunication {
 
-	public ATSOSDiscordCommunication(String discordAPIToken) {
+	public ATSOSDiscordCommunication(String discordAPIToken, ATSOSController controller) {
 		System.out.println(discordAPIToken);
 		  JDA jda = JDABuilder.createLight(discordAPIToken, Collections.emptyList())
-	      .addEventListeners(new SlashCommandListener())
+	      .addEventListeners(new SlashCommandListener(controller))
 	      .build();
 		  
 		  jda.retrieveCommands().queue(commands -> {
@@ -29,4 +30,7 @@ public class ATSOSDiscordCommunication {
 //		  
 //		  commands.queue();
 	}
+	
 }
+
+

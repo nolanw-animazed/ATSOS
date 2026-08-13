@@ -1,7 +1,10 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import data.ATSOSItem;
+import data.ATSOSUser;
 import discordbot.ATSOSDiscordCommunication;
 import io.ATSOSIO;
 import view.ATSOSGUI;
@@ -12,19 +15,22 @@ import view.ATSOSGUI;
  *
  */
 public class ATSOSController {
-
-	ATSOSDiscordCommunication discordMessanger;
 	
-	HashMap<String, String> optionsData;
+	/** Used to reply to discord if needed. */
+	private ATSOSDiscordCommunication discordMessanger;
 	
-	ATSOSGUI gui;
+	private HashMap<String, String> optionsData;
+	
+	private ATSOSGUI gui;
+	
+	private ArrayList<ATSOSItem> itemsList;
+	
+	private ArrayList<ATSOSUser> usersList;
 	
 	/**
 	 * 
 	 */
 	public ATSOSController() {
-		discordMessanger = null;
-		
 		//0 Differs to Pick File
 		//1 Differs to the Set Location
 		int mode = 1;
@@ -36,13 +42,23 @@ public class ATSOSController {
 		}
 		
 		gui = new ATSOSGUI(this);
+		discordMessanger = new ATSOSDiscordCommunication(optionsData.get("DiscordAPIToken"), this);
 	}
 	
 	/**
 	 * 
 	 */
 	public void initialize() {
-		discordMessanger = new ATSOSDiscordCommunication(optionsData.get("DiscordAPIToken"));
 		gui.initialize();
+	}
+
+	public String signedOutTech() {
+		String output = "signedOutTech() is not complete";
+		return output;
+	}
+
+	public String allTech() {
+		String output = "allTech() is not complete";
+		return output;
 	}
 }
