@@ -1,15 +1,10 @@
 package discordbot;
 
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 public class ATSOSDiscordCommunication {
 
