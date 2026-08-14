@@ -21,7 +21,7 @@ public class ATSOSItem {
 	/** Person that Signed it Out */
 	private String signedOutPerson;
 	/** ID of Person that SignedOut the Item */
-	private String signedOutPersonID;
+	private int signedOutPersonID;
 	/** Time at which the Item was Signed Out */
 	private String signedOutTime;
 	/** Time when the Item should be back by */
@@ -34,12 +34,26 @@ public class ATSOSItem {
 		this.barcode = barcode;
 		location = "Unassigned";
 		signedOutPerson = "Nobody";
+		signedOutPersonID = 0;
 		signedOutTime = "N/A";
 		assignedSignInTime = "N/A";
 		signedOutDetails = "N/A";
 		signedOut = false;
 		//Unimplemented as of now
 		authLevel = 0;
+	}
+	
+	public ATSOSItem(String[] inputArray) {
+		itemName = inputArray[0];
+		barcode = inputArray[1];
+		authLevel = Integer.parseInt(inputArray[2]);
+		signedOut = Boolean.parseBoolean(inputArray[3]);
+		location = inputArray[4];
+		signedOutPerson = inputArray[5];
+		signedOutPersonID = Integer.parseInt(inputArray[6]);
+		signedOutTime = inputArray[7];
+		assignedSignInTime = inputArray[8];
+		signedOutDetails = inputArray[9];
 	}
 	
 	/**
@@ -49,6 +63,53 @@ public class ATSOSItem {
 	 */
 	public void barcodeItem(String barcode) {
 		this.barcode = barcode;
+	}
+	
+	/**
+	 * Used to display very basic item data for GUI
+	 * @return String with Item Name, Barcode, and Location if Needed
+	 */
+	public String displayItemData() {
+		String output = itemName + "| #" + barcode;
+		if(!signedOut) {
+			output = output + "| Item is not Signed Out";
+		} else {
+			output = output + "| [" +location + "] ";
+		}
+		return output;
+	}
+	
+
+	//@TODO yea this isn't done
+	public String displaySignedOutInfo() {
+		String output = itemName + "| #" + barcode;
+		if(!signedOut) {
+			output = output + "| Item is not Signed Out";
+		} else {
+			output = output + "| [" +location + "] ";
+		}
+		return output;
+	}
+	
+	/**
+	 * Used for File Saving of Items.
+	 * @return A String Array Version of the Item for CSV Writing
+	 */
+	public String[] outputString() {
+		String[] output = new String[10];
+		
+		output[0] = itemName;
+		output[1] = barcode;
+		output[2] = Integer.toString(authLevel);
+		output[3] = Boolean.toString(signedOut);
+		output[4] = location;
+		output[5] = signedOutPerson;
+		output[6] = Integer.toString(signedOutPersonID);
+		output[7] = signedOutTime;
+		output[8] = assignedSignInTime;
+		output[9] = signedOutDetails;
+		
+		return output;
 	}
 	
 	/**
@@ -197,7 +258,7 @@ public class ATSOSItem {
 	 * Getter for the SignedOutPersonID
 	 * @return the signedOutPersonID
 	 */
-	public String getSignedOutPersonID() {
+	public int getSignedOutPersonID() {
 		return signedOutPersonID;
 	}
 
@@ -205,7 +266,7 @@ public class ATSOSItem {
 	 * Setter for the SignedOutPersonID
 	 * @param signedOutPersonID the signedOutPersonID to set
 	 */
-	public void setSignedOutPersonID(String signedOutPersonID) {
+	public void setSignedOutPersonID(int signedOutPersonID) {
 		this.signedOutPersonID = signedOutPersonID;
 	}
 

@@ -38,10 +38,12 @@ public class ATSOSIO {
 		
 		for(String optionsLine : optionsFile) {
 			String[] splitOptions = optionsLine.split("=");
-			switch (splitOptions[0]) {
-				case ("DiscordAPIToken") :
-					optionsOutput.put(splitOptions[0], splitOptions[1]);
-			};
+			if(splitOptions.length > 1) {
+				optionsOutput.put(splitOptions[0], splitOptions[1]);
+			} else {
+				optionsOutput.put(splitOptions[0], "");
+			}
+			
 		}
 		
 		return optionsOutput;
