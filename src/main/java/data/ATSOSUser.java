@@ -17,14 +17,43 @@ public class ATSOSUser {
 	 * Standard Constructor for the User Class
 	 * @param userName Username for the User
 	 * @param unHashedPassword Password for the User [Will be Hashed]
-	 * @param authLevel AuthLevel for the User
 	 */
 	public ATSOSUser(String userName, String unHashedPassword, int authLevel) {
-		this.userName = userName;
+		setUserName(userName);
+		setUpPassword(unHashedPassword);
 		this.authLevel = authLevel;
+	}
+	
+	/**
+	 * Constructor used for ATSOSUser when Data is being pulled from a File
+	 * @param userData UserData from the File
+	 */
+	public ATSOSUser(String[] userData) {
+		setUserName(userData[0]);
+		id = Integer.parseInt(userData[1]);
+		hashedPassword = userData[2];
+		authLevel = Integer.parseInt(userData[3]);
+	}
+	
+	private void setUpPassword(String unHashedPassword) {
+		if(unHashedPassword == null || unHashedPassword.equals("")) {
+			throw new IllegalArgumentException("Password cannot be empty or null");
+		}
+		if(unHashedPassword.length() < 4) {
+			throw new IllegalArgumentException("Please make your password 4 characters or more");
+		}
 		hashedPassword = BCrypt.hashpw(unHashedPassword, BCrypt.gensalt());
 	}
 	
+	public String[] outputArray() {
+		String[] userOutputList = new String[4];
+		userOutputList[0] = userName;
+		userOutputList[1] = Integer.toString(id);
+		userOutputList[2] = hashedPassword;
+		userOutputList[3] = Integer.toString(authLevel);
+		return userOutputList;
+	}
+
 	/**
 	 * Used to check the password for the User against the HashedPassword
 	 * @param unHashedPassword Given Password from the User
@@ -47,6 +76,9 @@ public class ATSOSUser {
 	 * @param userName the userName to set
 	 */
 	public void setUserName(String userName) {
+		if(userName == null || userName.equals("")) {
+			throw new IllegalArgumentException("Username cannot be empty or null");
+		}
 		this.userName = userName;
 	}
 
@@ -70,15 +102,15 @@ public class ATSOSUser {
 	 * Set Auth Level for User
 	 * @param authLevel the authLevel to set
 	 */
-	public boolean setAuthLevel(int authLevel, ATSOSUser higherUser, String unHashedPassword) {
-		if(higherUser.getAuthLevel() < authLevel) {
-			return false;
-		}
-		if(higherUser.checkPassword(unHashedPassword)) {
-			return false;
+	public void setAuthLevel(int authLevel, ATSOSUser higherUser, String unHashedPassword) {
+		if(authLevel == 0) {
+			this.authLevel = 0;
+		} else if(higherUser.getAuthLevel() < authLevel) {
+			throw new IllegalArgumentException("User does not have access to authorize this.");
+		} else if(higherUser.checkPassword(unHashedPassword)) {
+			throw new IllegalArgumentException("The user password seems to be incorrect.");
 		}
 		this.authLevel = authLevel;
-		return true;
 	}
 
 	/**

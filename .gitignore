@@ -26,3 +26,5 @@ replay_pid*
 
 # Discord Bot ID Blocker
 options.properties
+itemDataFile.csv
+userDataFile.csv

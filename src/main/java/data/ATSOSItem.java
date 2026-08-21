@@ -9,9 +9,8 @@ public class ATSOSItem {
 
 	/** Name of the Item within the System */
 	private String itemName;
-	/** Barcode for the Item [Printed Barcode on the Item]
-	    It's a string because there could be letters or numbers */
-	private String barcode;
+	/** Barcode for the Item [Printed Barcode on the Item] **/
+	private int barcode;
 	/** Auth Level is used to establish if a user can grab the item */
 	private int authLevel;
 	/** Current Location of the Item */
@@ -29,7 +28,7 @@ public class ATSOSItem {
 	/** Details on the Signout for the Item */
 	private String signedOutDetails;
 	
-	public ATSOSItem(String itemName, String barcode) {
+	public ATSOSItem(String itemName, int barcode) {
 		this.itemName = itemName;
 		this.barcode = barcode;
 		location = "Unassigned";
@@ -45,7 +44,7 @@ public class ATSOSItem {
 	
 	public ATSOSItem(String[] inputArray) {
 		itemName = inputArray[0];
-		barcode = inputArray[1];
+		barcode = Integer.parseInt(inputArray[1]);
 		authLevel = Integer.parseInt(inputArray[2]);
 		signedOut = Boolean.parseBoolean(inputArray[3]);
 		location = inputArray[4];
@@ -57,37 +56,36 @@ public class ATSOSItem {
 	}
 	
 	/**
-	 * Used to apply a specific barcode to an item
-	 * @TODO [I may just move this into the constructor, I'll have to see on implementation]
-	 * @param barcode
-	 */
-	public void barcodeItem(String barcode) {
-		this.barcode = barcode;
-	}
-	
-	/**
 	 * Used to display very basic item data for GUI
 	 * @return String with Item Name, Barcode, and Location if Needed
 	 */
 	public String displayItemData() {
-		String output = itemName + "| #" + barcode;
+		String output = itemName + " | #" + barcode;
 		if(!signedOut) {
-			output = output + "| Item is not Signed Out";
+			output = output + " | Item is not Signed Out";
 		} else {
-			output = output + "| [" +location + "] ";
+			output = output + " | [" +location + "] ";
 		}
+		return output;
+	}
+	
+	//@TODO yea this isn't done
+	public String displayAvailableInfo() {
+		if(signedOut) {
+			return null;
+		}
+		String output = itemName + " | #" + barcode + " | Item is not Signed Out";
 		return output;
 	}
 	
 
 	//@TODO yea this isn't done
 	public String displaySignedOutInfo() {
-		String output = itemName + "| #" + barcode;
 		if(!signedOut) {
-			output = output + "| Item is not Signed Out";
-		} else {
-			output = output + "| [" +location + "] ";
+			return null;
 		}
+		String output = itemName + "| #" + barcode;
+		output = output + "| [" +location + "] ";
 		return output;
 	}
 	
@@ -99,7 +97,7 @@ public class ATSOSItem {
 		String[] output = new String[10];
 		
 		output[0] = itemName;
-		output[1] = barcode;
+		output[1] = Integer.toString(barcode);
 		output[2] = Integer.toString(authLevel);
 		output[3] = Boolean.toString(signedOut);
 		output[4] = location;
@@ -146,7 +144,7 @@ public class ATSOSItem {
 	 * Get Barcode
 	 * @return the barcode
 	 */
-	public String getBarcode() {
+	public int getBarcode() {
 		return barcode;
 	}
 
@@ -154,7 +152,7 @@ public class ATSOSItem {
 	 * Set Barcode
 	 * @param barcode the barcode to set
 	 */
-	public void setBarcode(String barcode) {
+	public void setBarcode(int barcode) {
 		this.barcode = barcode;
 	}
 

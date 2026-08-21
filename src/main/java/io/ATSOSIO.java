@@ -1,10 +1,12 @@
 package io;
 
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -61,6 +63,11 @@ public class ATSOSIO {
 			CSVReader reader = new CSVReaderBuilder(new FileReader(fileLocation)).build();
 			myEntries = reader.readAll();
 		    reader.close();
+		} catch (FileNotFoundException e) {
+			//Make the List not Null
+			myEntries = new ArrayList<String[]>();
+			//File Not Made Yet
+			return myEntries;
 		} catch (IOException | CsvException e) {
 			e.printStackTrace();
 			System.exit(-1);
