@@ -35,6 +35,11 @@ public class ATSOSUser {
 		authLevel = Integer.parseInt(userData[3]);
 	}
 	
+	/**
+	 * Used to setup the Password for the User. It will take in a hashed password, and hash it if it's an acceptable password.
+	 * @throws Throws an Exception if the Password is null, empty, or less than 4 characters.
+	 * @param unHashedPassword Given Password by the User
+	 */
 	private void setUpPassword(String unHashedPassword) {
 		if(unHashedPassword == null || unHashedPassword.equals("")) {
 			throw new IllegalArgumentException("Password cannot be empty or null");
@@ -45,6 +50,10 @@ public class ATSOSUser {
 		hashedPassword = BCrypt.hashpw(unHashedPassword, BCrypt.gensalt());
 	}
 	
+	/**
+	 * Output Array for the User (Used for Data Output and List Views)
+	 * @return Returns an Array of [UserName, ID, HashedPW, and AuthLevel]
+	 */
 	public String[] outputArray() {
 		String[] userOutputList = new String[4];
 		userOutputList[0] = userName;

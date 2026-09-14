@@ -102,6 +102,10 @@ public class ATSOSController {
 		return output;
 	}
 
+	/**
+	 * Used by the Discord Bot to Request allTech Info from the System
+	 * @return Returns a concated String of all the Tech Info for the System
+	 */
 	public String allTech() {
 		String output = "";
 		
@@ -116,6 +120,7 @@ public class ATSOSController {
 		return output;
 	}
 
+	//@TODO is this even Used???
 	public List<String> getAllTechInfo() {
 		ArrayList<String> allTechInfo =  new ArrayList<String>();
 		
@@ -126,6 +131,10 @@ public class ATSOSController {
 		return allTechInfo;
 	}
 
+	/**
+	 * Used by the GUI to fulfill the SignedIn Tech ScrollBar.
+	 * @return Returns an Array of all SignedIn Items with their Info
+	 */
 	public List<String> getSignedInInfo() {
 		ArrayList<String> signedInTechInfo =  new ArrayList<String>();
 		
@@ -153,14 +162,22 @@ public class ATSOSController {
 		return allAvailableTechInfo;
 	}
 
+	/**
+	 * Saves the Data for the Project [Currently just to a File]
+	 * @TODO ?if I do SQL?
+	 */
 	public void saveData() {
 		saveItemDataToCSVFiles();
 		saveUserDataToCSVFiles();
 	}
 	
+	/**
+	 * Saves Item Data to a CSV File based off the OptionsFile
+	 */
 	public void saveItemDataToCSVFiles() {
 		ArrayList<String[]> output = new ArrayList<String[]>();
 		
+		//Create the Header than fill the List
 		output.add(getItemHeader());
 		
 		for(int i = 0; i < itemsList.size(); i++) {
@@ -170,6 +187,10 @@ public class ATSOSController {
 		ATSOSIO.writeFileCSVData(output, optionsData.get("itemDataFileLocation"));
 	}
 
+	/**
+	 * Creates a header for the Item CSV Output, used for alignment.
+	 * @return Header for Item CSV
+	 */
 	private String[] getItemHeader() {
 		String[] output = new String[10];
 		
@@ -187,9 +208,16 @@ public class ATSOSController {
 		return output;
 	}
 	
+	/**
+	 * Used to Save User Data to a CSVFile given the location in the optionsFile
+	 */
 	public void saveUserDataToCSVFiles() {
 		ArrayList<String[]> usersListOutput = new ArrayList<String[]>();
+		
+		//Header is created in method 
+		//[it's shorter than the item one by over half so I'm not refactoring it for now]
 		String[] usersListHeader = new String[4];
+		
 		usersListHeader[0] = "UserName";
 		usersListHeader[1] = "Id";
 		usersListHeader[2] = "Password";
@@ -203,6 +231,14 @@ public class ATSOSController {
 		ATSOSIO.writeFileCSVData(usersListOutput, optionsData.get("userDataFileLocation"));
 	}
 
+	/**
+	 * Used to add Users to the System, Called from the GUI
+	 * @param userName UserName for the User
+	 * @param password UnHashedPassword for the User [Given by the User]
+	 * @param authLevel AuthLevel for the User [Given by Admin]
+	 * @return Returns true if the User was Added, and False if the user was rejected
+	 * @TODO needs to do some checking
+	 */
 	public boolean addUser(String userName, String password, String authLevel) {
 		ATSOSUser user = new ATSOSUser(userName, password, Integer.parseInt(authLevel));
 		usersList.add(user);
@@ -210,6 +246,11 @@ public class ATSOSController {
 		return true;
 	}
 
+	/**
+	 * Used to Attempt a User Signin Given a Password [Only the Password is given, the system tries to find the user]
+	 * @param unhashedPassword Password given by the User for their account
+	 * @return Returns the User if found, but if they aren't found it returns null.
+	 */
 	public ATSOSUser attemptSignInViaPassword(String unhashedPassword) {
 		for(int i = 0; i < usersList.size(); i++) {
 			if(usersList.get(i).checkPassword(unhashedPassword)) {
@@ -219,6 +260,11 @@ public class ATSOSController {
 		return null;
 	}
 	
+	/**
+	 * Used to Directly send a message through the discord.
+	 * Called by the GUI to send sign in and sign out notices.
+	 * @param message
+	 */
 	public void sendMessageToDiscord(String message) {
 		discordMessanger.sendMessage(message);
 	}
