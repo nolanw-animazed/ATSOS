@@ -1,27 +1,54 @@
 package view;
 
 import java.awt.BorderLayout;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.lang.ModuleLayer.Controller;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
+import javax.print.DocFlavor;
+import javax.print.DocPrintJob;
+import javax.print.PrintException;
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+import javax.print.SimpleDoc;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.print.attribute.standard.OrientationRequested;
+import javax.print.attribute.standard.PrinterResolution;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import controller.ATSOSController;
 import data.ATSOSItem;
 import data.ATSOSUser;
+import uk.org.okapibarcode.backend.Code128;
+import uk.org.okapibarcode.backend.HumanReadableLocation;
+import uk.org.okapibarcode.graphics.Color;
+import uk.org.okapibarcode.output.Java2DRenderer;
 
 /**
  * GUI for the ATSOS, mainly in charge of working on the front end.
@@ -51,6 +78,10 @@ public class ATSOSGUI {
 	private ATSOSUser loggedInUser;
 	/** Main Frame for the project, stored for regeneration purposes */
 	private JFrame mainFrame;	
+	/** Houses all the Admin Panel Buttons, allowing them to be enabled and disabled. */
+	private ArrayList<JButton> adminButtons;
+	/** Current Selected Printer (to print barcodes)*/
+	private PrintService selectedPrinter;
 
 	/**
 	 * Main Constructor for the GUI, doesn't initiate anything, just used to start everything to null.
@@ -64,6 +95,8 @@ public class ATSOSGUI {
 		bottomLeftPanel = null;
 		topLeftPanel = null;
 		topRightPanel = null;
+		
+		adminButtons = new ArrayList<JButton>();
 	}
 	
 	/**
@@ -85,6 +118,8 @@ public class ATSOSGUI {
 				}
 			}
 		});
+		
+		buildJMenuBarHeader();
 		
 		mainFrame.setSize(800, 600);
 		
@@ -167,6 +202,10 @@ public class ATSOSGUI {
 		userNameLabel = new JLabel("<html>No User is Signed In</html>", SwingConstants.CENTER);
 		
 		userSignIn.addActionListener(e -> {
+			if(loggedInUser != null) {
+				showError(loggedInUser.getUserName() + " is currently signed in, please sign out first.");
+				return;
+			}
 			userSignIn();
 		});
 		
@@ -236,12 +275,23 @@ public class ATSOSGUI {
 		});
 		
 		reprintBarcode.addActionListener(e -> {
-			showError("reprintBarcode is unemplemented atm.");
+			if(selectedPrinter == null) {
+				JOptionPane.showConfirmDialog(null, "Please select a printer from the toolbar.", "Error" , JOptionPane.DEFAULT_OPTION);
+				return;
+			}
+			reprintBarcode();
 		});
 		
 		forceItemSignIn.addActionListener(e -> {
 			showError("forceItemSignIn is unemplemented atm.");
 		});
+		
+		adminButtons.add(addTech);
+		adminButtons.add(addUser);
+		adminButtons.add(removeTech);
+		adminButtons.add(removeUser);
+		adminButtons.add(reprintBarcode);
+		adminButtons.add(forceItemSignIn);
 		
 		topRightPanel.add(addTech);
 		topRightPanel.add(addUser);
@@ -249,9 +299,143 @@ public class ATSOSGUI {
 		topRightPanel.add(removeUser);
 		topRightPanel.add(reprintBarcode);
 		topRightPanel.add(forceItemSignIn);
+		
+		setAdminButtons(null);
+	}
+	
+
+	/**
+	 * Add all the Location Buttons to the Right Scrolling Panel
+	 */
+	private void setUpBottomPanels() {
+		innerBottomRightPanel.setLayout(new BoxLayout(innerBottomRightPanel, BoxLayout.Y_AXIS));
+		innerBottomLeftPanel.setLayout(new BoxLayout(innerBottomLeftPanel, BoxLayout.Y_AXIS));
+		
+		//@TODO This will need to be changed for click compatability
+		List<String> allTechInfo = controller.getAllAvailableTechInfo();
+		
+		for(int i = 0; i < allTechInfo.size(); i++) {
+			JButton techInfo = new JButton("<html>"+allTechInfo.get(i)+"</html>");
+			
+			techInfo.addActionListener(e -> {
+				showError("Item Info is Unavailable ATM.");
+			});
+			innerBottomLeftPanel.add(techInfo);
+		}
+		
+		//@TODO This will need to be changed for click compatability
+		//These need to be redone to take in ATSOSItems and not strings
+		List<String> signedInInfo = controller.getSignedInInfo();
+		
+		for(int i = 0; i < signedInInfo.size(); i++) {
+			JButton techInfo = new JButton("<html>"+signedInInfo.get(i)+"</html>");
+			
+			techInfo.addActionListener(e -> {
+				showError("Item Info is Unavailable ATM.");
+			});
+			innerBottomRightPanel.add(techInfo);
+		}
+		
+		regenerateWindow();
+	}
+
+	/**
+	 * Used to build the upper menu bar for the project
+	 * Taken and Edited from AMCTT
+	 */
+	private void buildJMenuBarHeader() {
+		
+		JMenuBar header = new JMenuBar();
+		
+		JMenu themes = new JMenu("Themes");
+		
+		JMenuItem metal = new JMenuItem("Metal");
+		
+		JMenuItem nimbus = new JMenuItem("Nimbus");
+		
+		JMenuItem motif = new JMenuItem("Motif");
+		
+		JMenuItem windows = new JMenuItem("Windows");
+		
+		metal.addActionListener(e -> {
+			changeUIDesign(UIManager.getCrossPlatformLookAndFeelClassName());
+		});
+		
+		nimbus.addActionListener(e -> {
+			changeUIDesign("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+		});
+		
+		motif.addActionListener(e -> {
+			changeUIDesign("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+		});
+		
+		windows.addActionListener(e -> {
+			changeUIDesign("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		});
+		
+		themes.add(metal);
+		themes.add(nimbus);
+		themes.add(motif);
+		themes.add(windows);
+		
+		header.add(themes);
+		
+		JMenu printers = new JMenu("Printers");
+		
+		PrintService[] allPrinters = PrintServiceLookup.lookupPrintServices(null, null);
+		
+		for (PrintService printer : allPrinters) {
+			String printerName = printer.getName();
+			JMenuItem printerMenuItems = new JMenuItem(printerName);
+			
+			printerMenuItems.addActionListener(e -> {
+				selectedPrinter = printer;
+			});
+			printers.add(printerMenuItems);
+		}
+		
+		header.add(printers);
+		
+		mainFrame.setJMenuBar(header);
+	}
+	
+	private void changeUIDesign(String uiDesign) {
+		try {
+			UIManager.setLookAndFeel(uiDesign);
+			SwingUtilities.updateComponentTreeUI(mainFrame);
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void setAdminButtons(ATSOSUser user) {
+		int authLevel = 0;
+		
+		if(user != null) {
+			authLevel = user.getAuthLevel();
+		}
+		
+		//@TODO maybe granularize this a bit later on
+		
+		switch(authLevel) {
+			case 0 -> {
+				for(int i = 0; i < adminButtons.size(); i++) {
+					adminButtons.get(i).setEnabled(false);
+				}
+			}
+			case 1 -> {
+				for(int i = 0; i < adminButtons.size(); i++) {
+					adminButtons.get(i).setEnabled(true);
+				}				
+			}
+		
+		};
+		
 	}
 
 	private void addTech() {
+		//@TODO This needs to ability to select names that are already in the system
 		JFrame addTechFrame = new JFrame("ATSOS Tech Add");
 		addTechFrame.setSize(400, 400);
 		addTechFrame.setLayout(new GridLayout(3, 2));
@@ -300,6 +484,7 @@ public class ATSOSGUI {
 				userNameLabel.setText("<html>"+user.getUserName()+" is currently signed in.</html>");
 				controller.sendMessageToDiscord(user.getUserName() + " has signed into the system.");
 				userSignInFrame.dispose();
+				setAdminButtons(loggedInUser);
 			} else {
 				showError("No User Found with that Password");
 			}
@@ -314,8 +499,12 @@ public class ATSOSGUI {
 	}
 	
 	private void userSignOut() {
+		if(loggedInUser == null) {
+			return;
+		}
 		controller.sendMessageToDiscord(loggedInUser.getUserName() + " has signed out of the system.");
 		loggedInUser = null;
+		setAdminButtons(loggedInUser);
 		userNameLabel.setText("<html>No User is Signed In</html>");
 	}
 	
@@ -364,45 +553,61 @@ public class ATSOSGUI {
 	}
 	
 	private void removeUser() {
+		//@TODO this is like not done at all lol
 		JFrame removeUserFrame = new JFrame("ATSOS Remove User");
 		
 		removeUserFrame.setSize(400, 400);
 		
 		removeUserFrame.setVisible(true);
 	}
-
-	/**
-	 * Add all the Location Buttons to the Right Scrolling Panel
-	 */
-	private void setUpBottomPanels() {
-		innerBottomRightPanel.setLayout(new BoxLayout(innerBottomRightPanel, BoxLayout.Y_AXIS));
-		innerBottomLeftPanel.setLayout(new BoxLayout(innerBottomLeftPanel, BoxLayout.Y_AXIS));
+	
+	private void reprintBarcode() {
+		JFrame barcodeFrame = new JFrame("ATSOS Reprint Barcode");
 		
-		//@TODO This will need to be changed for click compatability
-		List<String> allTechInfo = controller.getAllAvailableTechInfo();
+		barcodeFrame.setSize(400, 400);
+		
+		barcodeFrame.setVisible(true);
+		
+		JPanel outerPanel = new JPanel();
+		outerPanel.setLayout(new BorderLayout());
+		JLabel allTechLabel = new JLabel("All Tech in the System", SwingConstants.CENTER);
+		
+		outerPanel.add(allTechLabel, BorderLayout.PAGE_START);
+		
+		JPanel innerPanel = new JPanel();
+		JScrollPane scrollPanel = new JScrollPane(innerPanel);
+		
+		scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		
+		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+		
+		outerPanel.add(scrollPanel, BorderLayout.CENTER);
+		
+		List<ATSOSItem> allTechInfo = controller.getAllTechInfo();
 		
 		for(int i = 0; i < allTechInfo.size(); i++) {
-			JButton techInfo = new JButton("<html>"+allTechInfo.get(i)+"</html>");
+			ATSOSItem item = allTechInfo.get(i);
+			JButton techInfo = new JButton("<html>"+item.displayItemData()+"</html>");
+			System.out.println("This item is made " + item.getItemName());
 			
 			techInfo.addActionListener(e -> {
-				showError("Item Info is Unavailable ATM.");
+				printBarcodeForItem(Integer.toString(item.getBarcode()));
+				controller.sendMessageToDiscord("A Barcode has been printed for " + item.displayItemData());
 			});
-			innerBottomLeftPanel.add(techInfo);
-		}
-		
-		//@TODO This will need to be changed for click compatability
-		List<String> signedInInfo = controller.getSignedInInfo();
-		
-		for(int i = 0; i < signedInInfo.size(); i++) {
-			JButton techInfo = new JButton("<html>"+signedInInfo.get(i)+"</html>");
 			
-			techInfo.addActionListener(e -> {
-				showError("Item Info is Unavailable ATM.");
-			});
-			innerBottomRightPanel.add(techInfo);
+			innerPanel.add(techInfo);
 		}
 		
-		regenerateWindow();
+		barcodeFrame.add(outerPanel, BorderLayout.CENTER);
+		
+		innerPanel.revalidate();
+		innerPanel.repaint();
+		
+		scrollPanel.revalidate();
+		scrollPanel.repaint();
+		
+		barcodeFrame.revalidate();
+		barcodeFrame.repaint();
 	}
 	
 	/**
@@ -453,6 +658,70 @@ public class ATSOSGUI {
 		mainFrame.revalidate();
 		mainFrame.repaint();
 		mainFrame.setVisible(true);
+	}
+	
+	/**
+	 * Print Barcodes for the Items
+	 * Taken from AMCTT with very light editing.
+	 * @param barcodeNumberForItem Barcode Given for Printing
+	 */
+	private void printBarcodeForItem(String barcodeNumberForItem) {
+		Code128 barcode = new Code128();
+		barcode.setFontName("Monospaced");
+		barcode.setFontSize(16);
+		barcode.setModuleWidth(1);
+		barcode.setBarHeight(40);
+		barcode.setHumanReadableLocation(HumanReadableLocation.BOTTOM);
+		barcode.setContent(barcodeNumberForItem);
+
+		int width = barcode.getWidth();
+		int height = barcode.getHeight();
+
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+		Graphics2D g2d = image.createGraphics();
+		Java2DRenderer renderer = new Java2DRenderer(g2d, 1, Color.WHITE, Color.BLACK);
+		renderer.render(barcode);
+
+		try {
+			ImageIO.write(image, "png", new File("code128.png"));
+		} catch (IOException e) {
+			JOptionPane.showConfirmDialog(null, "Issue saving the barcode for printing. Restart the app.", "Error" , JOptionPane.DEFAULT_OPTION);
+			return;
+		}
+		
+		File file = new File("code128.png");
+		FileInputStream inputStream = null;
+		try {
+			inputStream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		if (selectedPrinter != null) {
+			DocPrintJob job = selectedPrinter.createPrintJob();
+			SimpleDoc doc = new SimpleDoc(inputStream, DocFlavor.INPUT_STREAM.PNG, null);
+			
+			PrintRequestAttributeSet attributes = new HashPrintRequestAttributeSet();
+			
+			attributes.add(OrientationRequested.PORTRAIT);
+			attributes.add(new PrinterResolution(203, 203, PrinterResolution.DPI));
+			attributes.add(new MediaPrintableArea(23, 0, 51, 25, MediaPrintableArea.MM));
+			try {
+				job.print(doc, attributes);
+			} catch (PrintException e) {
+				JOptionPane.showConfirmDialog(null, "Selected Printer does not work.", "Error" , JOptionPane.DEFAULT_OPTION);
+			}
+			
+			file.delete();
+		} else {
+			JOptionPane.showConfirmDialog(null, "Please select a printer from the toolbar.", "Error" , JOptionPane.DEFAULT_OPTION);
+		}
+		
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

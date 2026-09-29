@@ -119,16 +119,19 @@ public class ATSOSController {
 		
 		return output;
 	}
-
-	//@TODO is this even Used???
-	public List<String> getAllTechInfo() {
-		ArrayList<String> allTechInfo =  new ArrayList<String>();
+	
+	/**
+	 * Used to get all the Tech, so Full Lists can be Made
+	 * @return Returns an Array of all ATSOSItems.
+	 */
+	public List<ATSOSItem> getAllTechInfo() {
+		ArrayList<ATSOSItem> allTech =  new ArrayList<ATSOSItem>();
 		
 		for(int i = 0; i < itemsList.size(); i++) {
-			allTechInfo.add(itemsList.get(i).displayItemData());
+			allTech.add(itemsList.get(i));
 		}
 		
-		return allTechInfo;
+		return allTech;
 	}
 
 	/**
