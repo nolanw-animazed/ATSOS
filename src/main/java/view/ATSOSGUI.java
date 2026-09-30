@@ -112,6 +112,9 @@ public class ATSOSGUI {
 			public void windowClosing(WindowEvent windowEvent) {
 				int answer = JOptionPane.showConfirmDialog(null, "Are you sure you want to close the program?", "Confrimation" , JOptionPane.YES_NO_OPTION);
 				if(answer == 0) {
+					if(loggedInUser != null) {
+						userSignOut();
+					}
 					controller.sendMessageToDiscord("System is shutting down.");
 					controller.saveData();
 					System.exit(0);
@@ -429,6 +432,11 @@ public class ATSOSGUI {
 					adminButtons.get(i).setEnabled(true);
 				}				
 			}
+			case 2 -> {
+				for(int i = 0; i < adminButtons.size(); i++) {
+					adminButtons.get(i).setEnabled(true);
+				}				
+			}
 		
 		};
 		
@@ -553,20 +561,60 @@ public class ATSOSGUI {
 	}
 	
 	private void removeUser() {
-		//@TODO this is like not done at all lol
+		//@TODO Refactor this to remove duplicate code with other similar methods.
 		JFrame removeUserFrame = new JFrame("ATSOS Remove User");
 		
 		removeUserFrame.setSize(400, 400);
 		
+		JPanel outerPanel = new JPanel();
+		outerPanel.setLayout(new BorderLayout());
+		JLabel allTechLabel = new JLabel("All Users in the System", SwingConstants.CENTER);
+		
+		outerPanel.add(allTechLabel, BorderLayout.PAGE_START);
+		
+		JPanel innerPanel = new JPanel();
+		JScrollPane scrollPanel = new JScrollPane(innerPanel);
+		
+		scrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		
+		innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+		
+		outerPanel.add(scrollPanel, BorderLayout.CENTER);
+		
+		List<ATSOSUser> deletableUsers = controller.getDeletableUsers(loggedInUser);
+		
+		for(int i = 0; i < deletableUsers.size(); i++) {
+			ATSOSUser user = deletableUsers.get(i);
+			JButton userInfo = new JButton("<html>"+user.toString()+"</html>");
+			
+			userInfo.addActionListener(e -> {
+				//Not going to do another Window for this
+				//deleteUserInfoWindow(user);
+				if(loggedInUser.getAuthLevel() <= user.getAuthLevel()) {
+					showError("This user is of Equal or Higher AuthLevel, so they cannot be deleted.");
+					return;
+				}
+				int answer = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this user?", "Confrimation" , JOptionPane.YES_NO_OPTION);
+				if(answer == 0) {
+					userInfo.setEnabled(false);
+					controller.deleteUser(user, loggedInUser);
+					controller.sendMessageToDiscord(loggedInUser.getUserName() + " has deleted " + user.toString() + " from the system");
+					removeUserFrame.dispose();
+				}
+			});
+			
+			innerPanel.add(userInfo);
+		}
+		
+		removeUserFrame.add(outerPanel, BorderLayout.CENTER);
+		
 		removeUserFrame.setVisible(true);
 	}
-	
+
 	private void reprintBarcode() {
 		JFrame barcodeFrame = new JFrame("ATSOS Reprint Barcode");
 		
 		barcodeFrame.setSize(400, 400);
-		
-		barcodeFrame.setVisible(true);
 		
 		JPanel outerPanel = new JPanel();
 		outerPanel.setLayout(new BorderLayout());
@@ -588,7 +636,6 @@ public class ATSOSGUI {
 		for(int i = 0; i < allTechInfo.size(); i++) {
 			ATSOSItem item = allTechInfo.get(i);
 			JButton techInfo = new JButton("<html>"+item.displayItemData()+"</html>");
-			System.out.println("This item is made " + item.getItemName());
 			
 			techInfo.addActionListener(e -> {
 				printBarcodeForItem(Integer.toString(item.getBarcode()));
@@ -600,14 +647,17 @@ public class ATSOSGUI {
 		
 		barcodeFrame.add(outerPanel, BorderLayout.CENTER);
 		
-		innerPanel.revalidate();
-		innerPanel.repaint();
+		//I don't think I need this
+//		innerPanel.revalidate();
+//		innerPanel.repaint();
+//		
+//		scrollPanel.revalidate();
+//		scrollPanel.repaint();
+//		
+//		barcodeFrame.revalidate();
+//		barcodeFrame.repaint();
 		
-		scrollPanel.revalidate();
-		scrollPanel.repaint();
-		
-		barcodeFrame.revalidate();
-		barcodeFrame.repaint();
+		barcodeFrame.setVisible(true);
 	}
 	
 	/**
@@ -663,6 +713,8 @@ public class ATSOSGUI {
 	/**
 	 * Print Barcodes for the Items
 	 * Taken from AMCTT with very light editing.
+	 * This is practically made solely for Rollo Printer 2x1 Labels.
+	 * @TODO maybe edit it so it's not?
 	 * @param barcodeNumberForItem Barcode Given for Printing
 	 */
 	private void printBarcodeForItem(String barcodeNumberForItem) {

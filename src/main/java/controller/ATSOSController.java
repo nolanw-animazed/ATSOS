@@ -68,6 +68,8 @@ public class ATSOSController {
 			}
 		}
 		
+		usersList.sort(null);
+		
 		//Set up the GUI and initialize the Discord Bot
 		gui = new ATSOSGUI(this);
 		if(discordMode) {
@@ -245,6 +247,7 @@ public class ATSOSController {
 	public boolean addUser(String userName, String password, String authLevel) {
 		ATSOSUser user = new ATSOSUser(userName, password, Integer.parseInt(authLevel));
 		usersList.add(user);
+		usersList.sort(null);
 		//@TODO maybe make sure we aren't just duplictating accounts.
 		return true;
 	}
@@ -296,5 +299,29 @@ public class ATSOSController {
 		itemsList.add(item);
 		
 		return item;
+	}
+
+	public List<ATSOSUser> getDeletableUsers(ATSOSUser loggedInUser) {
+		ArrayList<ATSOSUser> deletableUsers = new ArrayList<ATSOSUser>();
+		
+		for(int i = 0; i < usersList.size(); i++) {
+			ATSOSUser user = usersList.get(i);
+			if(user.getAuthLevel() > loggedInUser.getAuthLevel()) {
+				continue;
+			}
+			deletableUsers.add(user);
+		}
+		
+		return deletableUsers;
+	}
+
+	public void deleteUser(ATSOSUser user, ATSOSUser loggedInUser) {
+		
+		if(loggedInUser.getAuthLevel() <= user.getAuthLevel()) {
+			// @TODO Throw an Error Maybe
+			return;
+		}
+		
+		usersList.remove(user);
 	}
 }

@@ -2,7 +2,7 @@ package data;
 
 import org.mindrot.jbcrypt.BCrypt;
 
-public class ATSOSUser {
+public class ATSOSUser implements Comparable<ATSOSUser>{
 	
 	/** UserName for the User */
 	private String userName;
@@ -129,5 +129,22 @@ public class ATSOSUser {
 	public int getAuthLevel() {
 		return authLevel;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return userName + " [#" + id + "] authLevel=" + authLevel;
+	}
 
+
+	@Override
+	public int compareTo(ATSOSUser otherUser) {
+		if(authLevel < otherUser.getAuthLevel()) {
+			return 1;
+		}
+		if(authLevel > otherUser.getAuthLevel()) {
+			return -1;
+		}
+		return userName.compareTo(otherUser.getUserName());
+	}
 }
