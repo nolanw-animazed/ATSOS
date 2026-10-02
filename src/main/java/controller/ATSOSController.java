@@ -140,17 +140,34 @@ public class ATSOSController {
 	 * Used by the GUI to fulfill the SignedIn Tech ScrollBar.
 	 * @return Returns an Array of all SignedIn Items with their Info
 	 */
-	public List<String> getSignedInInfo() {
-		ArrayList<String> signedInTechInfo =  new ArrayList<String>();
+	public List<ATSOSItem> getSignedInInfo() {
+		ArrayList<ATSOSItem> signedInTechInfo =  new ArrayList<ATSOSItem>();
 		
 		for(int i = 0; i < itemsList.size(); i++) {
-			String itemData = itemsList.get(i).displaySignedOutInfo();
-			if(itemData == null) {
+			ATSOSItem item = itemsList.get(i);
+			if(item.displaySignedOutInfo() != null) {
 				continue;
 			}
-			signedInTechInfo.add(itemData);
+			signedInTechInfo.add(item);
 		}
 		return signedInTechInfo;
+	}
+	
+	/**
+	 * Used by the GUI to fulfill the SignedOut Tech ScrollBar.
+	 * @return Returns an Array of all SignedOut Items with their Info
+	 */
+	public List<ATSOSItem> getSignedOutInfo() {
+		ArrayList<ATSOSItem> signedOutInfo =  new ArrayList<ATSOSItem>();
+		
+		for(int i = 0; i < itemsList.size(); i++) {
+			ATSOSItem item = itemsList.get(i);
+			if(item.displaySignedOutInfo() == null) {
+				continue;
+			}
+			signedOutInfo.add(item);
+		}
+		return signedOutInfo;
 	}
 
 	public List<String> getAllAvailableTechInfo() {

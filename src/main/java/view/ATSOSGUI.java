@@ -218,22 +218,27 @@ public class ATSOSGUI {
 		
 		userDetailsButton.addActionListener(e -> {
 			showError("userDetailsButton is unemplemented atm.");
+			//TODO
 		});
 		
 		techSignIn.addActionListener(e -> {
 			showError("techSignIn is unemplemented atm.");
+			//TODO
 		});
 		
 		techSignOut.addActionListener(e -> {
-			showError("techSignOut is unemplemented atm.");
+			//TODO maybe add a check for if there is tech to checkout?
+			techSignOut();
 		});
 		
 		viewAllTech.addActionListener(e -> {
 			showError("viewAllTech is unemplemented atm.");
+			//TODO
 		});
 		
 		searchTech.addActionListener(e -> {
 			showError("searchTech is unemplemented atm.");
+			//TODO
 		});
 		
 		topLeftPanel.add(userSignIn);
@@ -244,6 +249,11 @@ public class ATSOSGUI {
 		topLeftPanel.add(techSignOut);
 		topLeftPanel.add(viewAllTech);
 		topLeftPanel.add(searchTech);
+	}
+
+	private void techSignOut() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**
@@ -271,6 +281,7 @@ public class ATSOSGUI {
 		
 		removeTech.addActionListener(e -> {
 			showError("removeTech is unemplemented atm.");
+			//TODO
 		});
 		
 		removeUser.addActionListener(e -> {
@@ -287,6 +298,7 @@ public class ATSOSGUI {
 		
 		forceItemSignIn.addActionListener(e -> {
 			showError("forceItemSignIn is unemplemented atm.");
+			//TODO
 		});
 		
 		adminButtons.add(addTech);
@@ -314,33 +326,57 @@ public class ATSOSGUI {
 		innerBottomRightPanel.setLayout(new BoxLayout(innerBottomRightPanel, BoxLayout.Y_AXIS));
 		innerBottomLeftPanel.setLayout(new BoxLayout(innerBottomLeftPanel, BoxLayout.Y_AXIS));
 		
-		//@TODO This will need to be changed for click compatability
-		List<String> allTechInfo = controller.getAllAvailableTechInfo();
+		List<ATSOSItem> signedInInfo = controller.getSignedInInfo();
 		
-		for(int i = 0; i < allTechInfo.size(); i++) {
-			JButton techInfo = new JButton("<html>"+allTechInfo.get(i)+"</html>");
+		for(int i = 0; i < signedInInfo.size(); i++) {
+			ATSOSItem item = signedInInfo.get(i);
+			JButton techInfo = new JButton("<html>"+item.displayItemData()+"</html>");
 			
 			techInfo.addActionListener(e -> {
-				showError("Item Info is Unavailable ATM.");
+				displayItemInformation(item);
 			});
 			innerBottomLeftPanel.add(techInfo);
 		}
 		
-		//@TODO This will need to be changed for click compatability
-		//These need to be redone to take in ATSOSItems and not strings
-		List<String> signedInInfo = controller.getSignedInInfo();
+		List<ATSOSItem> signedOutInfo = controller.getSignedOutInfo();
 		
-		for(int i = 0; i < signedInInfo.size(); i++) {
-			JButton techInfo = new JButton("<html>"+signedInInfo.get(i)+"</html>");
+		for(int i = 0; i < signedOutInfo.size(); i++) {
+			ATSOSItem item = signedOutInfo.get(i);
+			JButton techInfo = new JButton("<html>"+item.displayItemData()+"</html>");
 			
 			techInfo.addActionListener(e -> {
-				showError("Item Info is Unavailable ATM.");
+				displayItemInformation(item);
 			});
 			innerBottomRightPanel.add(techInfo);
 		}
 		
 		regenerateWindow();
 	}
+
+	private void displayItemInformation(ATSOSItem item) {
+		JFrame userSignInFrame = new JFrame("ATSOS Specific Item Frame");
+		userSignInFrame.setSize(400, 400);
+		userSignInFrame.setLayout(new GridLayout(5, 2));
+		
+	}
+	
+// This is for DisplayItemInfromation, so I can see what data I am pulling in.
+//	public String[] outputString() {
+//		String[] output = new String[10];
+//		
+//		output[0] = itemName;
+//		output[1] = Integer.toString(barcode);
+//		output[2] = Integer.toString(authLevel);
+//		output[3] = Boolean.toString(signedOut);
+//		output[4] = location;
+//		output[5] = signedOutPerson;
+//		output[6] = Integer.toString(signedOutPersonID);
+//		output[7] = signedOutTime;
+//		output[8] = assignedSignInTime;
+//		output[9] = signedOutDetails;
+//		
+//		return output;
+//	}
 
 	/**
 	 * Used to build the upper menu bar for the project
@@ -419,7 +455,7 @@ public class ATSOSGUI {
 			authLevel = user.getAuthLevel();
 		}
 		
-		//@TODO maybe granularize this a bit later on
+		//TODO maybe granularize this a bit later on
 		
 		switch(authLevel) {
 			case 0 -> {
@@ -443,7 +479,7 @@ public class ATSOSGUI {
 	}
 
 	private void addTech() {
-		//@TODO This needs to ability to select names that are already in the system
+		//TODO This needs to ability to select names that are already in the system
 		JFrame addTechFrame = new JFrame("ATSOS Tech Add");
 		addTechFrame.setSize(400, 400);
 		addTechFrame.setLayout(new GridLayout(3, 2));
